@@ -1,0 +1,4233 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Sammy Odeyemi">
+
+<title>FIFA 21 Data Wrangling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="FIFA21_files/libs/clipboard/clipboard.min.js"></script>
+<script src="FIFA21_files/libs/quarto-html/quarto.js"></script>
+<script src="FIFA21_files/libs/quarto-html/popper.min.js"></script>
+<script src="FIFA21_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="FIFA21_files/libs/quarto-html/anchor.min.js"></script>
+<link href="FIFA21_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="FIFA21_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="FIFA21_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="FIFA21_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="FIFA21_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#libraries-used" id="toc-libraries-used" class="nav-link" data-scroll-target="#libraries-used">Libraries Used</a></li>
+  <li><a href="#data-import" id="toc-data-import" class="nav-link" data-scroll-target="#data-import">Data Import</a></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling">Data Wrangling</a>
+  <ul class="collapse">
+  <li><a href="#renaming-columns" id="toc-renaming-columns" class="nav-link" data-scroll-target="#renaming-columns">Renaming Columns</a></li>
+  <li><a href="#authornarrator" id="toc-authornarrator" class="nav-link" data-scroll-target="#authornarrator">Club Column</a></li>
+  <li><a href="#contract-column" id="toc-contract-column" class="nav-link" data-scroll-target="#contract-column">Contract Column</a></li>
+  <li><a href="#height" id="toc-height" class="nav-link" data-scroll-target="#height">Height</a></li>
+  <li><a href="#weight" id="toc-weight" class="nav-link" data-scroll-target="#weight">Weight</a></li>
+  <li><a href="#joined-national-column" id="toc-joined-national-column" class="nav-link" data-scroll-target="#joined-national-column">Joined National Column</a></li>
+  <li><a href="#value-wage-and-release-clause-columns" id="toc-value-wage-and-release-clause-columns" class="nav-link" data-scroll-target="#value-wage-and-release-clause-columns">Value, Wage and Release Clause Columns</a></li>
+  <li><a href="#weak-foot-skill-move-and-injury-rating-columns" id="toc-weak-foot-skill-move-and-injury-rating-columns" class="nav-link" data-scroll-target="#weak-foot-skill-move-and-injury-rating-columns">Weak Foot, Skill Move and Injury Rating Columns</a></li>
+  <li><a href="#sub-setting-columns" id="toc-sub-setting-columns" class="nav-link" data-scroll-target="#sub-setting-columns">Sub-setting Columns</a></li>
+  <li><a href="#saving-wrangled-data" id="toc-saving-wrangled-data" class="nav-link" data-scroll-target="#saving-wrangled-data">Saving Wrangled Data</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">FIFA 21 Data Wrangling</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Sammy Odeyemi </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="/R%20Projects/fifa21/fifaMAIN.jpg" class="img-fluid quarto-figure quarto-figure-center figure-img" width="371"></p>
+</figure>
+</div>
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>The <a href="https://drive.google.com/file/d/1YAOJ3liwDpHyD3yCZFZVxj-BJIDrGMs-/view?usp=drive_link" style="COLOR:BLUE;">FIFA 21 dataset</a> is a comprehensive collection of data related to <code>football players</code>, <code>teams</code>, and <code>matches</code> from the FIFA 21 video game. It includes detailed information such as player attributes, team statistics, and match outcomes. The dataset spans from the game’s release in 2020 and includes updates and patches released subsequently. This <a href="https://www.kaggle.com/datasets/yagunnersya/fifa-21-messy-raw-dataset-for-cleaning-exploring" style="COLOR:BLUE;">dataset</a> was obtained from <a href="kaggle.com" style="color:blue;">Kaggle</a>.</p>
+<p>A preliminary analysis of the <a href="https://drive.google.com/file/d/1YAOJ3liwDpHyD3yCZFZVxj-BJIDrGMs-/view?usp=drive_link" style="COLOR:BLUE'">FIFA 21 dataset</a> reveals several errors and inconsistencies that need to be addressed. These issues can be corrected using string manipulation techniques along with other data cleaning methods. By cleaning the dataset, we can ensure accurate and reliable data for further analysis and insights.</p>
+</section>
+<section id="libraries-used" class="level1">
+<h1>Libraries Used</h1>
+<p>The <code>tidyverse</code> library is a collection of R packages that can be used in Data Analysis. Some of the packages to be used are the <code>readr</code> for data import, <code>dplyr</code> for data wrangling, <code>stringr</code> for string manipulation to mention a few. Since these packages are housed and are core packages in the <code>tidyverse</code>. I call this library since it is already installed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load libraries </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'lubridate'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    date, intersect, setdiff, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr   1.1.4     ✔ readr   2.1.5
+✔ forcats 1.0.0     ✔ stringr 1.5.1
+✔ ggplot2 3.5.1     ✔ tibble  3.2.0
+✔ purrr   1.0.1     ✔ tidyr   1.3.1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'kableExtra'
+
+The following object is masked from 'package:dplyr':
+
+    group_rows</code></pre>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Should it not be installed, run the code block below before calling the libraries for use.</p>
+<div class="cell" data-eval="false">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"tidyverse"</span>,<span class="st">"lubridate"</span>,<span class="st">"kableExtra"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>The <code>kableExtra</code> package in R is designed to enhance the functionality of tables</strong></p>
+</div>
+</div>
+</section>
+<section id="data-import" class="level1">
+<h1>Data Import</h1>
+<p>The FIFA 21 dataset is a CSV file from Kaggle. To dive deep into the data, I proceeded to import it into RStudio, the IDE for the R Programming Language but not without first setting working directory.</p>
+<ul>
+<li><strong>Setting Working Directory</strong></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(<span class="st">"C:/Users/SAMMY/Desktop/FIFA21"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ul>
+<li><strong>Reading in Data</strong></li>
+</ul>
+<div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read in fifa 21 csv</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span><span class="fu">read_csv</span>(<span class="st">"fifa21 raw data v2.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 18979 Columns: 77
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (23): Name, LongName, photoUrl, playerUrl, Nationality, Club, Contract, ...
+dbl (54): ID, Age, ↓OVA, POT, BOV, Attacking, Crossing, Finishing, Heading A...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+</div>
+<p>A peek into the dataset just to get familiar with what the data is about :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co">#examine dataset </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">head</span>(fifa21raw,<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 0%">
+<col style="width: 2%">
+<col style="width: 3%">
+<col style="width: 5%">
+<col style="width: 7%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 2%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">ID</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">LongName</th>
+<th style="text-align: left;">photoUrl</th>
+<th style="text-align: left;">playerUrl</th>
+<th style="text-align: left;">Nationality</th>
+<th style="text-align: right;">Age</th>
+<th style="text-align: right;">↓OVA</th>
+<th style="text-align: right;">POT</th>
+<th style="text-align: left;">Club</th>
+<th style="text-align: left;">Contract</th>
+<th style="text-align: left;">Positions</th>
+<th style="text-align: left;">Height</th>
+<th style="text-align: left;">Weight</th>
+<th style="text-align: left;">Preferred Foot</th>
+<th style="text-align: right;">BOV</th>
+<th style="text-align: left;">Best Position</th>
+<th style="text-align: left;">Joined</th>
+<th style="text-align: left;">Loan Date End</th>
+<th style="text-align: left;">Value</th>
+<th style="text-align: left;">Wage</th>
+<th style="text-align: left;">Release Clause</th>
+<th style="text-align: right;">Attacking</th>
+<th style="text-align: right;">Crossing</th>
+<th style="text-align: right;">Finishing</th>
+<th style="text-align: right;">Heading Accuracy</th>
+<th style="text-align: right;">Short Passing</th>
+<th style="text-align: right;">Volleys</th>
+<th style="text-align: right;">Skill</th>
+<th style="text-align: right;">Dribbling</th>
+<th style="text-align: right;">Curve</th>
+<th style="text-align: right;">FK Accuracy</th>
+<th style="text-align: right;">Long Passing</th>
+<th style="text-align: right;">Ball Control</th>
+<th style="text-align: right;">Movement</th>
+<th style="text-align: right;">Acceleration</th>
+<th style="text-align: right;">Sprint Speed</th>
+<th style="text-align: right;">Agility</th>
+<th style="text-align: right;">Reactions</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">Power</th>
+<th style="text-align: right;">Shot Power</th>
+<th style="text-align: right;">Jumping</th>
+<th style="text-align: right;">Stamina</th>
+<th style="text-align: right;">Strength</th>
+<th style="text-align: right;">Long Shots</th>
+<th style="text-align: right;">Mentality</th>
+<th style="text-align: right;">Aggression</th>
+<th style="text-align: right;">Interceptions</th>
+<th style="text-align: right;">Positioning</th>
+<th style="text-align: right;">Vision</th>
+<th style="text-align: right;">Penalties</th>
+<th style="text-align: right;">Composure</th>
+<th style="text-align: right;">Defending</th>
+<th style="text-align: right;">Marking</th>
+<th style="text-align: right;">Standing Tackle</th>
+<th style="text-align: right;">Sliding Tackle</th>
+<th style="text-align: right;">Goalkeeping</th>
+<th style="text-align: right;">GK Diving</th>
+<th style="text-align: right;">GK Handling</th>
+<th style="text-align: right;">GK Kicking</th>
+<th style="text-align: right;">GK Positioning</th>
+<th style="text-align: right;">GK Reflexes</th>
+<th style="text-align: right;">Total Stats</th>
+<th style="text-align: right;">Base Stats</th>
+<th style="text-align: left;">W/F</th>
+<th style="text-align: left;">SM</th>
+<th style="text-align: left;">A/W</th>
+<th style="text-align: left;">D/W</th>
+<th style="text-align: left;">IR</th>
+<th style="text-align: right;">PAC</th>
+<th style="text-align: right;">SHO</th>
+<th style="text-align: right;">PAS</th>
+<th style="text-align: right;">DRI</th>
+<th style="text-align: right;">DEF</th>
+<th style="text-align: right;">PHY</th>
+<th style="text-align: left;">Hits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">158023</td>
+<td style="text-align: left;">L. Messi</td>
+<td style="text-align: left;">Lionel Messi</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/158/023/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/158023/lionel-messi/210006/</td>
+<td style="text-align: left;">Argentina</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">FC Barcelona</td>
+<td style="text-align: left;">2004 ~ 2021</td>
+<td style="text-align: left;">RW, ST, CF</td>
+<td style="text-align: left;">170cm</td>
+<td style="text-align: left;">72kg</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">Jul 1, 2004</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€103.5M</td>
+<td style="text-align: left;">€560K</td>
+<td style="text-align: left;">€138.4M</td>
+<td style="text-align: right;">429</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">470</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">389</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">347</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2231</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: left;">771</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20801</td>
+<td style="text-align: left;">Cristiano Ronaldo</td>
+<td style="text-align: left;">C. Ronaldo dos Santos Aveiro</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/020/801/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/20801/c-ronaldo-dos-santos-aveiro/210006/</td>
+<td style="text-align: left;">Portugal</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: left;">Juventus</td>
+<td style="text-align: left;">2018 ~ 2022</td>
+<td style="text-align: left;">ST, LW</td>
+<td style="text-align: left;">187cm</td>
+<td style="text-align: left;">83kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: left;">ST</td>
+<td style="text-align: left;">Jul 10, 2018</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€63M</td>
+<td style="text-align: left;">€220K</td>
+<td style="text-align: left;">€75.9M</td>
+<td style="text-align: right;">437</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">414</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">431</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">444</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">2221</td>
+<td style="text-align: right;">464</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">5★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: left;">562</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">200389</td>
+<td style="text-align: left;">J. Oblak</td>
+<td style="text-align: left;">Jan Oblak</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/200/389/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/200389/jan-oblak/210006/</td>
+<td style="text-align: left;">Slovenia</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">Atlético Madrid</td>
+<td style="text-align: left;">2014 ~ 2023</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">188cm</td>
+<td style="text-align: left;">87kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">Jul 16, 2014</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€120M</td>
+<td style="text-align: left;">€125K</td>
+<td style="text-align: left;">€159.4M</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">109</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">307</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">49</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">437</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">1413</td>
+<td style="text-align: right;">489</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">1★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">150</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">192985</td>
+<td style="text-align: left;">K. De Bruyne</td>
+<td style="text-align: left;">Kevin De Bruyne</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/192/985/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/192985/kevin-de-bruyne/210006/</td>
+<td style="text-align: left;">Belgium</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">Manchester City</td>
+<td style="text-align: left;">2015 ~ 2023</td>
+<td style="text-align: left;">CAM, CM</td>
+<td style="text-align: left;">181cm</td>
+<td style="text-align: left;">70kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">CAM</td>
+<td style="text-align: left;">Aug 30, 2015</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€129M</td>
+<td style="text-align: left;">€370K</td>
+<td style="text-align: left;">€161M</td>
+<td style="text-align: right;">407</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">441</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">398</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">186</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">2304</td>
+<td style="text-align: right;">485</td>
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">207</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">190871</td>
+<td style="text-align: left;">Neymar Jr</td>
+<td style="text-align: left;">Neymar da Silva Santos Jr.</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/190/871/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/190871/neymar-da-silva-santos-jr/210006/</td>
+<td style="text-align: left;">Brazil</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">Paris Saint-Germain</td>
+<td style="text-align: left;">2017 ~ 2022</td>
+<td style="text-align: left;">LW, CAM</td>
+<td style="text-align: left;">175cm</td>
+<td style="text-align: left;">68kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">LW</td>
+<td style="text-align: left;">Aug 3, 2017</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€132M</td>
+<td style="text-align: left;">€270K</td>
+<td style="text-align: left;">€166.5M</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">448</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">357</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">356</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">2175</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: left;">5★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: left;">595</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">188545</td>
+<td style="text-align: left;">R. Lewandowski</td>
+<td style="text-align: left;">Robert Lewandowski</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/188/545/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/188545/robert-lewandowski/210006/</td>
+<td style="text-align: left;">Poland</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">FC Bayern München</td>
+<td style="text-align: left;">2014 ~ 2023</td>
+<td style="text-align: left;">ST</td>
+<td style="text-align: left;">184cm</td>
+<td style="text-align: left;">80kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">ST</td>
+<td style="text-align: left;">Jul 1, 2014</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€111M</td>
+<td style="text-align: left;">€240K</td>
+<td style="text-align: left;">€132M</td>
+<td style="text-align: right;">423</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">407</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">407</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">420</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">391</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">49</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">2195</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">248</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">209331</td>
+<td style="text-align: left;">M. Salah</td>
+<td style="text-align: left;">Mohamed Salah</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/209/331/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/209331/mohamed-salah/210006/</td>
+<td style="text-align: left;">Egypt</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">Liverpool</td>
+<td style="text-align: left;">2017 ~ 2023</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">175cm</td>
+<td style="text-align: left;">71kg</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">Jul 1, 2017</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€120.5M</td>
+<td style="text-align: left;">€250K</td>
+<td style="text-align: left;">€144.3M</td>
+<td style="text-align: right;">392</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">406</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">460</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">393</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">376</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">122</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">2211</td>
+<td style="text-align: right;">470</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: left;">246</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">212831</td>
+<td style="text-align: left;">Alisson</td>
+<td style="text-align: left;">Alisson Ramses Becker</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/212/831/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/212831/alisson-ramses-becker/210006/</td>
+<td style="text-align: left;">Brazil</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">Liverpool</td>
+<td style="text-align: left;">2018 ~ 2024</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">191cm</td>
+<td style="text-align: left;">91kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">Jul 19, 2018</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€102M</td>
+<td style="text-align: left;">€160K</td>
+<td style="text-align: left;">€120.3M</td>
+<td style="text-align: right;">114</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">138</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">240</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">439</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">1389</td>
+<td style="text-align: right;">490</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">1★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">120</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">231747</td>
+<td style="text-align: left;">K. Mbappé</td>
+<td style="text-align: left;">Kylian Mbappé</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/231/747/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/231747/kylian-mbappe/210006/</td>
+<td style="text-align: left;">France</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: left;">Paris Saint-Germain</td>
+<td style="text-align: left;">2018 ~ 2022</td>
+<td style="text-align: left;">ST, LW, RW</td>
+<td style="text-align: left;">178cm</td>
+<td style="text-align: left;">73kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">ST</td>
+<td style="text-align: left;">Jul 1, 2018</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€185.5M</td>
+<td style="text-align: left;">€160K</td>
+<td style="text-align: left;">€203.1M</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">394</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">458</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">404</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">341</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2147</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">5★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: left;">1.6K</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">192448</td>
+<td style="text-align: left;">M. ter Stegen</td>
+<td style="text-align: left;">Marc-André ter Stegen</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/192/448/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/192448/marc-andre-ter-stegen/210006/</td>
+<td style="text-align: left;">Germany</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">FC Barcelona</td>
+<td style="text-align: left;">2014 ~ 2022</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">187cm</td>
+<td style="text-align: left;">85kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">Jul 1, 2014</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">€110M</td>
+<td style="text-align: left;">€260K</td>
+<td style="text-align: left;">€147.7M</td>
+<td style="text-align: right;">118</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">144</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">254</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">171</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">439</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">1442</td>
+<td style="text-align: right;">484</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">1★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: left;">130</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Check for Cells with NA</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(ID<span class="sc">:</span>Hits) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">complete.cases</span>(.)) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 3%">
+<col style="width: 5%">
+<col style="width: 8%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 2%">
+<col style="width: 2%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">ID</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">LongName</th>
+<th style="text-align: left;">photoUrl</th>
+<th style="text-align: left;">playerUrl</th>
+<th style="text-align: left;">Nationality</th>
+<th style="text-align: right;">Age</th>
+<th style="text-align: right;">↓OVA</th>
+<th style="text-align: right;">POT</th>
+<th style="text-align: left;">Club</th>
+<th style="text-align: left;">Contract</th>
+<th style="text-align: left;">Positions</th>
+<th style="text-align: left;">Height</th>
+<th style="text-align: left;">Weight</th>
+<th style="text-align: left;">Preferred Foot</th>
+<th style="text-align: right;">BOV</th>
+<th style="text-align: left;">Best Position</th>
+<th style="text-align: left;">Joined</th>
+<th style="text-align: left;">Loan Date End</th>
+<th style="text-align: left;">Value</th>
+<th style="text-align: left;">Wage</th>
+<th style="text-align: left;">Release Clause</th>
+<th style="text-align: right;">Attacking</th>
+<th style="text-align: right;">Crossing</th>
+<th style="text-align: right;">Finishing</th>
+<th style="text-align: right;">Heading Accuracy</th>
+<th style="text-align: right;">Short Passing</th>
+<th style="text-align: right;">Volleys</th>
+<th style="text-align: right;">Skill</th>
+<th style="text-align: right;">Dribbling</th>
+<th style="text-align: right;">Curve</th>
+<th style="text-align: right;">FK Accuracy</th>
+<th style="text-align: right;">Long Passing</th>
+<th style="text-align: right;">Ball Control</th>
+<th style="text-align: right;">Movement</th>
+<th style="text-align: right;">Acceleration</th>
+<th style="text-align: right;">Sprint Speed</th>
+<th style="text-align: right;">Agility</th>
+<th style="text-align: right;">Reactions</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">Power</th>
+<th style="text-align: right;">Shot Power</th>
+<th style="text-align: right;">Jumping</th>
+<th style="text-align: right;">Stamina</th>
+<th style="text-align: right;">Strength</th>
+<th style="text-align: right;">Long Shots</th>
+<th style="text-align: right;">Mentality</th>
+<th style="text-align: right;">Aggression</th>
+<th style="text-align: right;">Interceptions</th>
+<th style="text-align: right;">Positioning</th>
+<th style="text-align: right;">Vision</th>
+<th style="text-align: right;">Penalties</th>
+<th style="text-align: right;">Composure</th>
+<th style="text-align: right;">Defending</th>
+<th style="text-align: right;">Marking</th>
+<th style="text-align: right;">Standing Tackle</th>
+<th style="text-align: right;">Sliding Tackle</th>
+<th style="text-align: right;">Goalkeeping</th>
+<th style="text-align: right;">GK Diving</th>
+<th style="text-align: right;">GK Handling</th>
+<th style="text-align: right;">GK Kicking</th>
+<th style="text-align: right;">GK Positioning</th>
+<th style="text-align: right;">GK Reflexes</th>
+<th style="text-align: right;">Total Stats</th>
+<th style="text-align: right;">Base Stats</th>
+<th style="text-align: left;">W/F</th>
+<th style="text-align: left;">SM</th>
+<th style="text-align: left;">A/W</th>
+<th style="text-align: left;">D/W</th>
+<th style="text-align: left;">IR</th>
+<th style="text-align: right;">PAC</th>
+<th style="text-align: right;">SHO</th>
+<th style="text-align: right;">PAS</th>
+<th style="text-align: right;">DRI</th>
+<th style="text-align: right;">DEF</th>
+<th style="text-align: right;">PHY</th>
+<th style="text-align: left;">Hits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">173731</td>
+<td style="text-align: left;">G. Bale</td>
+<td style="text-align: left;">Gareth Bale</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/173/731/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/173731/gareth-bale/210006/</td>
+<td style="text-align: left;">Wales</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: left;">Tottenham Hotspur</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">185cm</td>
+<td style="text-align: left;">82kg</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">Sep 1, 2013</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€35M</td>
+<td style="text-align: left;">€200K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">417</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">419</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">397</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">405</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">362</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">161</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2213</td>
+<td style="text-align: right;">465</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: left;">282</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">193105</td>
+<td style="text-align: left;">A. Areola</td>
+<td style="text-align: left;">Alphonse Areola</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/193/105/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/193105/alphonse-areola/210006/</td>
+<td style="text-align: left;">France</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: left;">Fulham</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">195cm</td>
+<td style="text-align: left;">94kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">Jul 1, 2010</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€32M</td>
+<td style="text-align: left;">€71K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">117</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">103</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">305</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">264</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">142</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">406</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">1380</td>
+<td style="text-align: right;">461</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">1★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">94</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">200888</td>
+<td style="text-align: left;">Danilo Pereira</td>
+<td style="text-align: left;">Danilo Luís Hélio Pereira</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/200/888/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/200888/danilo-luis-helio-pereira/210006/</td>
+<td style="text-align: left;">Portugal</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">Paris Saint-Germain</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">CDM, CM</td>
+<td style="text-align: left;">188cm</td>
+<td style="text-align: left;">83kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">CDM</td>
+<td style="text-align: left;">Jul 2, 2015</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€27M</td>
+<td style="text-align: left;">€20K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">329</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">340</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">323</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">377</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">363</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">234</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">439</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">3★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: left;">285</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">216409</td>
+<td style="text-align: left;">M. Politano</td>
+<td style="text-align: left;">Matteo Politano</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/216/409/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/216409/matteo-politano/210006/</td>
+<td style="text-align: left;">Italy</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">Napoli</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">RM, RW, ST</td>
+<td style="text-align: left;">171cm</td>
+<td style="text-align: left;">67kg</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">RM</td>
+<td style="text-align: left;">Jul 1, 2019</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€28M</td>
+<td style="text-align: left;">€105K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">350</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">399</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">423</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">329</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">324</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">121</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">1994</td>
+<td style="text-align: right;">419</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: left;">93</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">223959</td>
+<td style="text-align: left;">L. Torreira</td>
+<td style="text-align: left;">Lucas Torreira</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/223/959/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/223959/lucas-torreira/210006/</td>
+<td style="text-align: left;">Uruguay</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: left;">Atlético Madrid</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">CDM, CM</td>
+<td style="text-align: left;">166cm</td>
+<td style="text-align: left;">60kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">CDM</td>
+<td style="text-align: left;">Jul 12, 2018</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€33.5M</td>
+<td style="text-align: left;">€74K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">336</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">373</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">401</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">354</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">359</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">48</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">240</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">2102</td>
+<td style="text-align: right;">448</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">3★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: left;">194</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">204259</td>
+<td style="text-align: left;">S. Arias</td>
+<td style="text-align: left;">Santiago Arias</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/204/259/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/204259/santiago-arias/210006/</td>
+<td style="text-align: left;">Colombia</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">Bayer 04 Leverkusen</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">RB</td>
+<td style="text-align: left;">178cm</td>
+<td style="text-align: left;">72kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">RB</td>
+<td style="text-align: left;">Jul 31, 2018</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€23.5M</td>
+<td style="text-align: left;">€60K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">315</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">324</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">392</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">349</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">347</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">233</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">2026</td>
+<td style="text-align: right;">435</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">3★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">72</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">201995</td>
+<td style="text-align: left;">Felipe Anderson</td>
+<td style="text-align: left;">Felipe Anderson Pereira Gomes</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/201/995/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/201995/felipe-anderson-pereira-gomes/210006/</td>
+<td style="text-align: left;">Brazil</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">FC Porto</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">LM, CAM</td>
+<td style="text-align: left;">175cm</td>
+<td style="text-align: left;">70kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">LM</td>
+<td style="text-align: left;">Jul 15, 2018</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€27.5M</td>
+<td style="text-align: left;">€53K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">345</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">393</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">428</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">322</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">341</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">152</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">443</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: left;">124</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">222509</td>
+<td style="text-align: left;">Dani Ceballos</td>
+<td style="text-align: left;">Daniel Ceballos Fernández</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/222/509/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/222509/daniel-ceballos-fernandez/210006/</td>
+<td style="text-align: left;">Spain</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: left;">Arsenal</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">CM, CAM</td>
+<td style="text-align: left;">179cm</td>
+<td style="text-align: left;">68kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: left;">CM</td>
+<td style="text-align: left;">Jul 14, 2017</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€31.5M</td>
+<td style="text-align: left;">€125K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">327</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">388</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">376</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">342</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">365</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">216</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">2077</td>
+<td style="text-align: right;">440</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: left;">152</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">220651</td>
+<td style="text-align: left;">Angeliño</td>
+<td style="text-align: left;">José Ángel Esmoris Tasende</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/220/651/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/220651/jose-angel-esmoris-tasende/210006/</td>
+<td style="text-align: left;">Spain</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: left;">RB Leipzig</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">LB</td>
+<td style="text-align: left;">175cm</td>
+<td style="text-align: left;">69kg</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">CM</td>
+<td style="text-align: left;">Jul 3, 2019</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€29.5M</td>
+<td style="text-align: left;">€95K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">345</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">400</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">388</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">369</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">366</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">226</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">2152</td>
+<td style="text-align: right;">447</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">2 ★</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: left;">2K</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">212814</td>
+<td style="text-align: left;">João Mário</td>
+<td style="text-align: left;">João Mário Naval Costa Eduardo</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/212/814/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/212814/joao-mario-naval-costa-eduardo/210006/</td>
+<td style="text-align: left;">Portugal</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: left;">Sporting CP</td>
+<td style="text-align: left;">Jun 30, 2021 On Loan</td>
+<td style="text-align: left;">CM, CAM, LM</td>
+<td style="text-align: left;">179cm</td>
+<td style="text-align: left;">73kg</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: left;">CM</td>
+<td style="text-align: left;">Aug 28, 2016</td>
+<td style="text-align: left;">Jun 30, 2021</td>
+<td style="text-align: left;">€24M</td>
+<td style="text-align: left;">€100K</td>
+<td style="text-align: left;">€0</td>
+<td style="text-align: right;">348</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">389</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">369</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">352</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">189</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2045</td>
+<td style="text-align: right;">432</td>
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: left;">79</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="data-wrangling" class="level1">
+<h1>Data Wrangling</h1>
+<section id="renaming-columns" class="level3">
+<h3 class="anchored" data-anchor-id="renaming-columns">Renaming Columns</h3>
+<p>Upon examining the dataframe, some column names are inconsistent and badly formatted, hence the need to rename</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#renamed ColumnNames for easy readability</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="at">Overall_Analysis=</span><span class="st">`</span><span class="at">↓OVA</span><span class="st">`</span>,<span class="at">PlayerPotential=</span>POT,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                                <span class="at">Best_Overall=</span>BOV,<span class="at">Joined_National=</span>Joined,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                                <span class="at">Skill_Moves=</span>SM,<span class="at">AttackingWorkRate=</span><span class="st">`</span><span class="at">A/W</span><span class="st">`</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                                <span class="at">DefensiveWorkRate=</span><span class="st">`</span><span class="at">D/W</span><span class="st">`</span>,<span class="at">WeakFootRating=</span><span class="st">`</span><span class="at">W/F</span><span class="st">`</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                <span class="at">InjuryRating=</span>IR,<span class="at">Shooting=</span>SHO,<span class="at">Pace=</span>PAC,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                <span class="at">Weight_kg=</span>Weight)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The purpose of this codeblock above is to make the column names in the&nbsp;<code>fifa21raw</code>&nbsp;dataframe more descriptive and easier to understand. This helps improve readability of code, especially when working with the data frame in subsequent analyses or visualizations.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Data Dictionary
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here is the <a href="https://docs.google.com/presentation/d/1bS616FSVsH3WzOT4uckQmWJHP1HRj_TF/edit?usp=drive_link&amp;ouid=107549502594190094236&amp;rtpof=true&amp;sd=true" style="color:blue;">data dictionary</a> describing the columns in the dataframe.</p>
+</div>
+</div>
+<section id="check" class="level4">
+<h4 class="anchored" data-anchor-id="check">check</h4>
+<p>To crosscheck the <code>rename()</code> is effected in dataframe</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">colnames</span>(fifa21raw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ID</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Name</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LongName</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">photoUrl</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">playerUrl</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Nationality</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Age</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Overall_Analysis</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PlayerPotential</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Club</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Contract</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Positions</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Height</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Weight_kg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Preferred Foot</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Best_Overall</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Best Position</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Joined_National</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Loan Date End</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Wage</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Release Clause</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Attacking</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Crossing</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Finishing</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Heading Accuracy</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Short Passing</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Volleys</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Skill</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dribbling</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Curve</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FK Accuracy</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Long Passing</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ball Control</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Movement</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Acceleration</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sprint Speed</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Agility</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Reactions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Balance</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Power</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Shot Power</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jumping</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stamina</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Strength</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Long Shots</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mentality</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aggression</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Interceptions</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Positioning</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Vision</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Penalties</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Composure</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Defending</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Marking</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Standing Tackle</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sliding Tackle</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Goalkeeping</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GK Diving</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GK Handling</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GK Kicking</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GK Positioning</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GK Reflexes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Total Stats</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Base Stats</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">WeakFootRating</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Skill_Moves</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">AttackingWorkRate</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DefensiveWorkRate</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">InjuryRating</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pace</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Shooting</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PAS</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DRI</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DEF</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">PHY</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hits</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="authornarrator" class="level2">
+<h2 class="anchored" data-anchor-id="authornarrator">Club Column</h2>
+<p>The <code>Club</code> column contains clubs of respective players and upon examining the column, it is populated with nextline characters “\n” which leaves the <code>Club column</code> in bad format.</p>
+<p>Here are first 10 observations in the column</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(Club) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 1
+   Club                         
+   &lt;chr&gt;                        
+ 1 "\n\n\n\nFC Barcelona"       
+ 2 "\n\n\n\nJuventus"           
+ 3 "\n\n\n\nAtlético Madrid"    
+ 4 "\n\n\n\nManchester City"    
+ 5 "\n\n\n\nParis Saint-Germain"
+ 6 "\n\n\n\nFC Bayern München"  
+ 7 "\n\n\n\nLiverpool"          
+ 8 "\n\n\n\nLiverpool"          
+ 9 "\n\n\n\nParis Saint-Germain"
+10 "\n\n\n\nFC Barcelona"       </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Removed nextline characters found in the club column</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Club=</span><span class="fu">str_remove_all</span>(Club,<span class="st">"</span><span class="sc">\n</span><span class="st">"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The code chunk above rids the Club column of any nextline characters by use of the <code>str_remove_all()</code></p>
+<section id="check-1" class="level4">
+<h4 class="anchored" data-anchor-id="check-1">check</h4>
+<p>To crosscheck that the column is clear of any nextline characters:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(Club) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 1
+   Club               
+   &lt;chr&gt;              
+ 1 FC Barcelona       
+ 2 Juventus           
+ 3 Atlético Madrid    
+ 4 Manchester City    
+ 5 Paris Saint-Germain
+ 6 FC Bayern München  
+ 7 Liverpool          
+ 8 Liverpool          
+ 9 Paris Saint-Germain
+10 FC Barcelona       </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="contract-column" class="level2">
+<h2 class="anchored" data-anchor-id="contract-column">Contract Column</h2>
+<p>The <code>Contract</code> column contains information about the duration of contracts and loan periods for players.</p>
+<p>Here are first 10 observations in the column</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(Contract) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 18,979 × 1
+   Contract   
+   &lt;chr&gt;      
+ 1 2004 ~ 2021
+ 2 2018 ~ 2022
+ 3 2014 ~ 2023
+ 4 2015 ~ 2023
+ 5 2017 ~ 2022
+ 6 2014 ~ 2023
+ 7 2017 ~ 2023
+ 8 2018 ~ 2024
+ 9 2018 ~ 2022
+10 2014 ~ 2022
+# ℹ 18,969 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span><span class="fu">separate</span>(fifa21raw,<span class="at">col =</span> Contract,<span class="at">into =</span> <span class="fu">c</span>(<span class="st">"start_year"</span>,<span class="st">"end_year"</span>),<span class="at">sep =</span> <span class="st">"~"</span>,<span class="at">remove =</span> F)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Contract_type=</span><span class="fu">case_when</span>(<span class="fu">str_detect</span>(start_year,<span class="st">"Free"</span>)<span class="sc">~</span><span class="st">"Free"</span>, </span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">str_detect</span>(start_year,<span class="st">"On Loan"</span>)<span class="sc">~</span> <span class="st">"Loan"</span>,</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="cn">TRUE</span><span class="sc">~</span> <span class="st">"Full-Time"</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">start_year=</span><span class="fu">case_when</span>(<span class="fu">str_detect</span>(Contract,<span class="st">"Free"</span>)<span class="sc">~</span> <span class="cn">NA_character_</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">str_detect</span>(Contract,<span class="st">"On Loan"</span>)<span class="sc">~</span><span class="cn">NA_character_</span>,</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                              <span class="cn">TRUE</span><span class="sc">~</span>start_year),</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">end_year=</span><span class="fu">case_when</span>(<span class="fu">str_detect</span>(Contract,<span class="st">"On Loan"</span>)<span class="sc">~</span> <span class="fu">str_extract</span>(Contract,<span class="st">"</span><span class="sc">\\</span><span class="st">d{4}"</span>),</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>                            <span class="cn">TRUE</span><span class="sc">~</span>end_year))</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(start_year,end_year),as.numeric))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This code chunk above separates the&nbsp;<code>Contract</code>&nbsp;column into&nbsp;<code>start_year</code>&nbsp;and&nbsp;<code>end_year</code>, classifies contracts as ‘Free’, ‘Loan’, or ‘Full-Time’, handles missing values for&nbsp;<code>start_year</code>&nbsp;and&nbsp;<code>end_year</code>&nbsp;based on contract type, and converts these columns to numeric values for further analysis.</p>
+<section id="check-2" class="level4">
+<h4 class="anchored" data-anchor-id="check-2">check</h4>
+<p>To crosscheck that the new columns are created off the existing column to determine what groups are the players’ Contract_type and all changes effected:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Contract,Contract_type,start_year,end_year) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Contract</th>
+<th style="text-align: left;">Contract_type</th>
+<th style="text-align: right;">start_year</th>
+<th style="text-align: right;">end_year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2004 ~ 2021</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">2021</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2018 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2018</td>
+<td style="text-align: right;">2022</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2014 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2014</td>
+<td style="text-align: right;">2023</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2015 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2015</td>
+<td style="text-align: right;">2023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2017 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2017</td>
+<td style="text-align: right;">2022</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2014 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2014</td>
+<td style="text-align: right;">2023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2017 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2017</td>
+<td style="text-align: right;">2023</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2018 ~ 2024</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2018</td>
+<td style="text-align: right;">2024</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2018 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2018</td>
+<td style="text-align: right;">2022</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2014 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: right;">2014</td>
+<td style="text-align: right;">2022</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="height" class="level2">
+<h2 class="anchored" data-anchor-id="height">Height</h2>
+<p>The <code>height</code> column comprises of Players’ Height, some in <code>centimeter</code> and some in <code>feet</code> and <code>inches</code></p>
+<p>such as <code>199cm</code>and <code>"5'7\""</code> respectively</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Height) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Height</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">170cm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">187cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">188cm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">181cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">175cm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">184cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">175cm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">191cm</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">178cm</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">187cm</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>There is the need to then standardize all height measurements and to ensure all values are in the same unit (centimeters)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>convert_height_fn<span class="ot">&lt;-</span><span class="cf">function</span>(Height) {</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  counter<span class="ot">&lt;&lt;-</span><span class="dv">1</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (row <span class="cf">in</span> Height) {</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">str_detect</span>(row,<span class="st">"'"</span>))</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>             {</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>               row<span class="ot">&lt;-</span><span class="fu">strsplit</span>(row,<span class="st">"'"</span>)[[<span class="dv">1</span>]]</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>               feet<span class="ot">&lt;-</span><span class="fu">as.numeric</span>(row[[<span class="dv">1</span>]])</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>               inches<span class="ot">&lt;-</span><span class="fu">as.numeric</span>(<span class="fu">str_remove</span>(row[[<span class="dv">2</span>]],<span class="st">"</span><span class="sc">\"</span><span class="st">"</span>))</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>               cm<span class="ot">&lt;-</span><span class="fu">round</span>(((feet<span class="sc">*</span><span class="dv">12</span>)<span class="sc">+</span> inches) <span class="sc">*</span> <span class="fl">2.54</span>,<span class="at">digits=</span><span class="dv">0</span>)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>               Height[counter]<span class="ot">&lt;-</span>cm</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>             }</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>           <span class="cf">else</span>{</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>             Height[counter]<span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">str_remove</span>(row,<span class="st">"cm"</span>))</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>           }</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>    counter<span class="ot">&lt;-</span> counter<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(Height)</span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span> <span class="fu">mutate</span>(fifa21raw,<span class="at">Height=</span><span class="fu">as.numeric</span>(<span class="fu">convert_height_fn</span>(Height))) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">height_cm=</span>Height)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The convert height function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This function helps to convert and standardize height values ~ some in feet and inches, and others in centimeters for the purpose of consistency and data quality</p>
+</div>
+</div>
+<section id="check-3" class="level4">
+<h4 class="anchored" data-anchor-id="check-3">check</h4>
+<p>To crosscheck that the height column has been standardized</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,height_cm) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">height_cm</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">170</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">187</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">188</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">181</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">175</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">184</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">175</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">191</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">178</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">187</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="weight" class="level2">
+<h2 class="anchored" data-anchor-id="weight">Weight</h2>
+<p>The <code>Weight</code> column comprises of Players’ Weight, some in <code>kilogram</code>, some in <code>pounds</code> such as <code>72kg</code> and <code>192lbs</code> respectively</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Weight_kg) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Weight_kg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">72kg</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">83kg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">87kg</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">70kg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">68kg</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">80kg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">71kg</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">91kg</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">73kg</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">85kg</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>There is the need to then standardize all Weight measurements and to ensure all values are in the same unit (centimeters)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>convert_weight_fn<span class="ot">&lt;-</span> <span class="cf">function</span>(Weight_kg){</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  counter<span class="ot">&lt;&lt;-</span><span class="dv">1</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (row <span class="cf">in</span> Weight_kg) {</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">str_detect</span>(row,<span class="st">"lbs"</span>)) {</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>        row<span class="ot">&lt;-</span><span class="fu">str_remove</span>(row,<span class="st">"lbs"</span>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>        row<span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(row)<span class="sc">/</span><span class="fl">2.20462</span>,<span class="at">digits=</span><span class="dv">0</span>)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>        Weight_kg[counter]<span class="ot">&lt;-</span>row</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">else</span>{</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>        row<span class="ot">&lt;-</span><span class="fu">str_remove</span>(row,<span class="st">"kg"</span>)</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>      row<span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(row)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>      Weight_kg[counter]<span class="ot">&lt;-</span>row</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>      counter<span class="ot">&lt;-</span>counter<span class="sc">+</span><span class="dv">1</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a> <span class="fu">return</span>(Weight_kg) </span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span> <span class="fu">mutate</span>(fifa21raw,<span class="at">Weight_kg=</span><span class="fu">as.numeric</span>(<span class="fu">convert_weight_fn</span>(Weight_kg)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The convert weight function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This function helps to convert and standardize weight values ~ some in pounds, kilogram and others in centimeters for the purpose of consistency and data quality</p>
+</div>
+</div>
+<section id="check-4" class="level4">
+<h4 class="anchored" data-anchor-id="check-4">check</h4>
+<p>To crosscheck that the weight column has been standardized</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Weight_kg) <span class="sc">%&gt;%</span> <span class="fu">head</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Weight_kg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">72</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">83</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">87</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">70</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">68</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">80</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="joined-national-column" class="level2">
+<h2 class="anchored" data-anchor-id="joined-national-column">Joined National Column</h2>
+<p>The <code>Joined National</code> column is a character column indicating when a player joined up with the National Team but it ideally should be of date datatype.</p>
+<p>Here’s what it looks like:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="sc">%&gt;%</span><span class="fu">select</span>(<span class="st">`</span><span class="at">Joined_National</span><span class="st">`</span>)<span class="sc">%&gt;%</span><span class="fu">head</span>(<span class="dv">10</span>)<span class="sc">%&gt;%</span>knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Joined_National</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Jul 1, 2004</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jul 10, 2018</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jul 16, 2014</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aug 30, 2015</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aug 3, 2017</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jul 1, 2014</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jul 1, 2017</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jul 19, 2018</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jul 1, 2018</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jul 1, 2014</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>It should be in date format and the code chunk beneath ensures of that.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">Joined_National=</span><span class="fu">as.Date</span>(Joined_National,<span class="at">format=</span><span class="st">"%b %d, %Y"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="check-5" class="level4">
+<h4 class="anchored" data-anchor-id="check-5">check</h4>
+<p>To crosscheck that the Joined National column has been standardized to date data type</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(Joined_National) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>) <span class="sc">%&gt;%</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Joined_National</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2004-07-01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2018-07-10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2014-07-16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2015-08-30</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2017-08-03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2014-07-01</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2017-07-01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2018-07-19</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2018-07-01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2014-07-01</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(fifa21raw<span class="sc">$</span>Joined_National)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Date[1:18979], format: "2004-07-01" "2018-07-10" "2014-07-16" "2015-08-30" "2017-08-03" ...</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="value-wage-and-release-clause-columns" class="level2">
+<h2 class="anchored" data-anchor-id="value-wage-and-release-clause-columns">Value, Wage and Release Clause Columns</h2>
+<p>The <code>Value</code>, <code>Wage</code> and <code>Release Clause</code> columns house the worth of a player in the market, their earnings in their clubs and the fee to be paid to release a player from their contract respectively.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a> knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Value,Wage,<span class="st">`</span><span class="at">Release Clause</span><span class="st">`</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Value</th>
+<th style="text-align: left;">Wage</th>
+<th style="text-align: left;">Release Clause</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">€103.5M</td>
+<td style="text-align: left;">€560K</td>
+<td style="text-align: left;">€138.4M</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">€63M</td>
+<td style="text-align: left;">€220K</td>
+<td style="text-align: left;">€75.9M</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">€120M</td>
+<td style="text-align: left;">€125K</td>
+<td style="text-align: left;">€159.4M</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">€129M</td>
+<td style="text-align: left;">€370K</td>
+<td style="text-align: left;">€161M</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">€132M</td>
+<td style="text-align: left;">€270K</td>
+<td style="text-align: left;">€166.5M</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">€111M</td>
+<td style="text-align: left;">€240K</td>
+<td style="text-align: left;">€132M</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">€120.5M</td>
+<td style="text-align: left;">€250K</td>
+<td style="text-align: left;">€144.3M</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">€102M</td>
+<td style="text-align: left;">€160K</td>
+<td style="text-align: left;">€120.3M</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">€185.5M</td>
+<td style="text-align: left;">€160K</td>
+<td style="text-align: left;">€203.1M</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">€110M</td>
+<td style="text-align: left;">€260K</td>
+<td style="text-align: left;">€147.7M</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Upon close examination, the columns are of character datatype and contain the Euro currency symbol (€). Additionally, they use “M” to represent values in millions and “K” to represent values in thousands.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>fifa21raw<span class="ot">&lt;-</span>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(Value,Wage,<span class="st">`</span><span class="at">Release Clause</span><span class="st">`</span>),</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a> <span class="cf">function</span>(col) {</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>   <span class="fu">case_when</span>(</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_detect</span>(col, <span class="st">"M"</span>) <span class="sc">~</span> <span class="fu">as.double</span>(<span class="fu">str_replace_all</span>(col, <span class="st">"(€|M)"</span>, <span class="st">""</span>)) <span class="sc">*</span> <span class="dv">1000000</span>,</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">str_detect</span>(col, <span class="st">"K"</span>) <span class="sc">~</span> <span class="fu">as.double</span>(<span class="fu">str_replace_all</span>(col, <span class="st">"(€|K)"</span>, <span class="st">""</span>)) <span class="sc">*</span> <span class="dv">1000</span>,</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="fu">as.double</span>(<span class="fu">str_replace</span>(col, <span class="st">"€"</span>, <span class="st">""</span>)))}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This code chunk above processes the&nbsp;<code>value</code>,&nbsp;<code>wage</code>, and&nbsp;<code>release clause</code>&nbsp;columns by removing currency symbols and suffixes, removing non-numeric characters and converting to numeric values.</p>
+<section id="check-6" class="level4">
+<h4 class="anchored" data-anchor-id="check-6">check</h4>
+<p>To crosscheck that the columns have been appropriately processed (cleaned of currency, millions and thousands symbols and converted to numeric values):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">select</span>(fifa21raw,Value,<span class="st">`</span><span class="at">Release Clause</span><span class="st">`</span>,Wage) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Value</th>
+<th style="text-align: right;">Release Clause</th>
+<th style="text-align: right;">Wage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">103500000</td>
+<td style="text-align: right;">138400000</td>
+<td style="text-align: right;">560000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">63000000</td>
+<td style="text-align: right;">75900000</td>
+<td style="text-align: right;">220000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">120000000</td>
+<td style="text-align: right;">159400000</td>
+<td style="text-align: right;">125000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">129000000</td>
+<td style="text-align: right;">161000000</td>
+<td style="text-align: right;">370000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">132000000</td>
+<td style="text-align: right;">166500000</td>
+<td style="text-align: right;">270000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">111000000</td>
+<td style="text-align: right;">132000000</td>
+<td style="text-align: right;">240000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">120500000</td>
+<td style="text-align: right;">144300000</td>
+<td style="text-align: right;">250000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">102000000</td>
+<td style="text-align: right;">120300000</td>
+<td style="text-align: right;">160000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">185500000</td>
+<td style="text-align: right;">203100000</td>
+<td style="text-align: right;">160000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">110000000</td>
+<td style="text-align: right;">147700000</td>
+<td style="text-align: right;">260000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="weak-foot-skill-move-and-injury-rating-columns" class="level2">
+<h2 class="anchored" data-anchor-id="weak-foot-skill-move-and-injury-rating-columns">Weak Foot, Skill Move and Injury Rating Columns</h2>
+<p>The <strong><code>Weak Foot</code></strong>, <strong><code>Skill Moves</code></strong>, and <strong><code>Injury Rating</code></strong> columns collectively provide insights into a player’s technical skills and physical resilience. The <strong><code>Weak Foot</code></strong> rating (1 to 5 stars) shows proficiency with the non-dominant foot, enhancing versatility. The <strong><code>Skill Moves</code></strong> rating (1 to 5 stars) reflects the ability to perform complex dribbles. The <strong><code>Injury Rating</code></strong> (1 to 5 stars) indicates susceptibility to injuries, with lower ratings suggesting better durability.</p>
+<p>A peek at some of the observations in these columns is as below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">select</span>(WeakFootRating,Skill_Moves,InjuryRating) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">5</span>) <span class="sc">%&gt;%</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">WeakFootRating</th>
+<th style="text-align: left;">Skill_Moves</th>
+<th style="text-align: left;">InjuryRating</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">5 ★</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4 ★</td>
+<td style="text-align: left;">5★</td>
+<td style="text-align: left;">5 ★</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3 ★</td>
+<td style="text-align: left;">1★</td>
+<td style="text-align: left;">3 ★</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: left;">4★</td>
+<td style="text-align: left;">4 ★</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5 ★</td>
+<td style="text-align: left;">5★</td>
+<td style="text-align: left;">5 ★</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>They have similar inconsistency, hence the need to treat them altogether:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="ot">&lt;-</span> fifa21raw <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(WeakFootRating, Skill_Moves, InjuryRating), </span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>            <span class="sc">~</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(., <span class="st">"★"</span>), </span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">as.numeric</span>(<span class="fu">str_remove</span>(., <span class="st">"★"</span>)), </span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>                      <span class="fu">as.numeric</span>(.))</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  ))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There were 3 warnings in `mutate()`.
+The first warning was:
+ℹ In argument: `across(...)`.
+Caused by warning in `if_else()`:
+! NAs introduced by coercion
+ℹ Run `dplyr::last_dplyr_warnings()` to see the 2 remaining warnings.</code></pre>
+</div>
+</div>
+<section id="check-7" class="level4">
+<h4 class="anchored" data-anchor-id="check-7">check</h4>
+<p>To crosscheck that the columns are clear of the star symbol (★):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span><span class="fu">select</span>(WeakFootRating,Skill_Moves,InjuryRating) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">5</span>) <span class="sc">%&gt;%</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: right;">WeakFootRating</th>
+<th style="text-align: right;">Skill_Moves</th>
+<th style="text-align: right;">InjuryRating</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="sub-setting-columns" class="level2">
+<h2 class="anchored" data-anchor-id="sub-setting-columns">Sub-setting Columns</h2>
+<p>This is important so as to focus on relevant data and to be rid of unnecessary columns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="ot">&lt;-</span> fifa21raw <span class="sc">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ID<span class="sc">:</span>Contract, Contract_type, Positions, height_cm, Weight_kg, <span class="st">`</span><span class="at">Preferred Foot</span><span class="st">`</span><span class="sc">:</span>Hits)  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>fifa21raw <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">5</span>) <span class="sc">%&gt;%</span> knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 2%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 2%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 1%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+<col style="width: 0%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">ID</th>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">LongName</th>
+<th style="text-align: left;">photoUrl</th>
+<th style="text-align: left;">playerUrl</th>
+<th style="text-align: left;">Nationality</th>
+<th style="text-align: right;">Age</th>
+<th style="text-align: right;">Overall_Analysis</th>
+<th style="text-align: right;">PlayerPotential</th>
+<th style="text-align: left;">Club</th>
+<th style="text-align: left;">Contract</th>
+<th style="text-align: left;">Contract_type</th>
+<th style="text-align: left;">Positions</th>
+<th style="text-align: right;">height_cm</th>
+<th style="text-align: right;">Weight_kg</th>
+<th style="text-align: left;">Preferred Foot</th>
+<th style="text-align: right;">Best_Overall</th>
+<th style="text-align: left;">Best Position</th>
+<th style="text-align: left;">Joined_National</th>
+<th style="text-align: left;">Loan Date End</th>
+<th style="text-align: right;">Value</th>
+<th style="text-align: right;">Wage</th>
+<th style="text-align: right;">Release Clause</th>
+<th style="text-align: right;">Attacking</th>
+<th style="text-align: right;">Crossing</th>
+<th style="text-align: right;">Finishing</th>
+<th style="text-align: right;">Heading Accuracy</th>
+<th style="text-align: right;">Short Passing</th>
+<th style="text-align: right;">Volleys</th>
+<th style="text-align: right;">Skill</th>
+<th style="text-align: right;">Dribbling</th>
+<th style="text-align: right;">Curve</th>
+<th style="text-align: right;">FK Accuracy</th>
+<th style="text-align: right;">Long Passing</th>
+<th style="text-align: right;">Ball Control</th>
+<th style="text-align: right;">Movement</th>
+<th style="text-align: right;">Acceleration</th>
+<th style="text-align: right;">Sprint Speed</th>
+<th style="text-align: right;">Agility</th>
+<th style="text-align: right;">Reactions</th>
+<th style="text-align: right;">Balance</th>
+<th style="text-align: right;">Power</th>
+<th style="text-align: right;">Shot Power</th>
+<th style="text-align: right;">Jumping</th>
+<th style="text-align: right;">Stamina</th>
+<th style="text-align: right;">Strength</th>
+<th style="text-align: right;">Long Shots</th>
+<th style="text-align: right;">Mentality</th>
+<th style="text-align: right;">Aggression</th>
+<th style="text-align: right;">Interceptions</th>
+<th style="text-align: right;">Positioning</th>
+<th style="text-align: right;">Vision</th>
+<th style="text-align: right;">Penalties</th>
+<th style="text-align: right;">Composure</th>
+<th style="text-align: right;">Defending</th>
+<th style="text-align: right;">Marking</th>
+<th style="text-align: right;">Standing Tackle</th>
+<th style="text-align: right;">Sliding Tackle</th>
+<th style="text-align: right;">Goalkeeping</th>
+<th style="text-align: right;">GK Diving</th>
+<th style="text-align: right;">GK Handling</th>
+<th style="text-align: right;">GK Kicking</th>
+<th style="text-align: right;">GK Positioning</th>
+<th style="text-align: right;">GK Reflexes</th>
+<th style="text-align: right;">Total Stats</th>
+<th style="text-align: right;">Base Stats</th>
+<th style="text-align: right;">WeakFootRating</th>
+<th style="text-align: right;">Skill_Moves</th>
+<th style="text-align: left;">AttackingWorkRate</th>
+<th style="text-align: left;">DefensiveWorkRate</th>
+<th style="text-align: right;">InjuryRating</th>
+<th style="text-align: right;">Pace</th>
+<th style="text-align: right;">Shooting</th>
+<th style="text-align: right;">PAS</th>
+<th style="text-align: right;">DRI</th>
+<th style="text-align: right;">DEF</th>
+<th style="text-align: right;">PHY</th>
+<th style="text-align: left;">Hits</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">158023</td>
+<td style="text-align: left;">L. Messi</td>
+<td style="text-align: left;">Lionel Messi</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/158/023/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/158023/lionel-messi/210006/</td>
+<td style="text-align: left;">Argentina</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">FC Barcelona</td>
+<td style="text-align: left;">2004 ~ 2021</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: left;">RW, ST, CF</td>
+<td style="text-align: right;">170</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: left;">Left</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">RW</td>
+<td style="text-align: left;">2004-07-01</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">103500000</td>
+<td style="text-align: right;">560000</td>
+<td style="text-align: right;">138400000</td>
+<td style="text-align: right;">429</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">470</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">389</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">347</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2231</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: left;">771</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20801</td>
+<td style="text-align: left;">Cristiano Ronaldo</td>
+<td style="text-align: left;">C. Ronaldo dos Santos Aveiro</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/020/801/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/20801/c-ronaldo-dos-santos-aveiro/210006/</td>
+<td style="text-align: left;">Portugal</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: left;">Juventus</td>
+<td style="text-align: left;">2018 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: left;">ST, LW</td>
+<td style="text-align: right;">187</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: left;">ST</td>
+<td style="text-align: left;">2018-07-10</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">63000000</td>
+<td style="text-align: right;">220000</td>
+<td style="text-align: right;">75900000</td>
+<td style="text-align: right;">437</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">414</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">431</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">71</td>
+<td style="text-align: right;">444</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">353</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">58</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">2221</td>
+<td style="text-align: right;">464</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: left;">562</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">200389</td>
+<td style="text-align: left;">J. Oblak</td>
+<td style="text-align: left;">Jan Oblak</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/200/389/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/200389/jan-oblak/210006/</td>
+<td style="text-align: left;">Slovenia</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: left;">Atlético Madrid</td>
+<td style="text-align: left;">2014 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: right;">188</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">GK</td>
+<td style="text-align: left;">2014-07-16</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">120000000</td>
+<td style="text-align: right;">125000</td>
+<td style="text-align: right;">159400000</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">109</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">307</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">49</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">140</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">437</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">1413</td>
+<td style="text-align: right;">489</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">52</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: left;">150</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">192985</td>
+<td style="text-align: left;">K. De Bruyne</td>
+<td style="text-align: left;">Kevin De Bruyne</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/192/985/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/192985/kevin-de-bruyne/210006/</td>
+<td style="text-align: left;">Belgium</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">Manchester City</td>
+<td style="text-align: left;">2015 ~ 2023</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: left;">CAM, CM</td>
+<td style="text-align: right;">181</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">CAM</td>
+<td style="text-align: left;">2015-08-30</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">129000000</td>
+<td style="text-align: right;">370000</td>
+<td style="text-align: right;">161000000</td>
+<td style="text-align: right;">407</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">441</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">398</td>
+<td style="text-align: right;">77</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">66</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">186</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">2304</td>
+<td style="text-align: right;">485</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">207</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">190871</td>
+<td style="text-align: left;">Neymar Jr</td>
+<td style="text-align: left;">Neymar da Silva Santos Jr.</td>
+<td style="text-align: left;">https://cdn.sofifa.com/players/190/871/21_60.png</td>
+<td style="text-align: left;">http://sofifa.com/player/190871/neymar-da-silva-santos-jr/210006/</td>
+<td style="text-align: left;">Brazil</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">Paris Saint-Germain</td>
+<td style="text-align: left;">2017 ~ 2022</td>
+<td style="text-align: left;">Full-Time</td>
+<td style="text-align: left;">LW, CAM</td>
+<td style="text-align: right;">175</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: left;">Right</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: left;">LW</td>
+<td style="text-align: left;">2017-08-03</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">132000000</td>
+<td style="text-align: right;">270000</td>
+<td style="text-align: right;">166500000</td>
+<td style="text-align: right;">408</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">448</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">88</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">89</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">357</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">356</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">93</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">2175</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">94</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: left;">595</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="saving-wrangled-data" class="level2">
+<h2 class="anchored" data-anchor-id="saving-wrangled-data">Saving Wrangled Data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(<span class="fu">as.data.frame</span>(fifa21raw),<span class="st">"fifa21_cleaned.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-simple callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Dataset and Source Code
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can access dataset <a href="https://drive.google.com/file/d/1YAOJ3liwDpHyD3yCZFZVxj-BJIDrGMs-/view?usp=drive_link">here</a> and source code <a href="https://github.com/Sammyoddy/Audible-Data-Cleaning/blob/main/audible.R" style="COLOR:BLUE;">here</a></p>
+</div>
+</div>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
